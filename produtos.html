@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inclusão de Produtos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f9;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Inclusão de Produtos</h1>
+        <form id="product-form">
+            <div class="form-group">
+                <label for="product-name">Nome do Produto</label>
+                <input type="text" id="product-name" placeholder="Ex: Caneta, Caderno..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="product-price">Valor de Compra (R$)</label>
+                <input type="number" id="product-price" step="0.01" placeholder="Ex: 10.00" required>
+            </div>
+
+            <button type="submit">Adicionar Produto</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome do Produto</th>
+                    <th>Valor de Compra (R$)</th>
+                </tr>
+            </thead>
+            <tbody id="product-table">
+                <!-- Produtos aparecerão aqui -->
+            </tbody>
+        </table>
+
+        <a href="index.html" style="text-decoration: none; color: white; display: inline-block; margin-top: 20px; background-color: #28a745; padding: 10px 20px; border-radius: 4px;">Voltar</a>
+    </div>
+
+    <!-- Supabase Script -->
+    <script type="module">
+        // Importar o cliente Supabase
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        // Substituir pelos valores do seu projeto Supabase
+        const SUPABASE_URL = 'https://supabase.com/dashboard/project/fjhudwriseiveolqhfgw/editor/17243';
+        const SUPABASE_ANON_KEY = '17243';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const productForm = document.getElementById('product-form');
+        const productTable = document.getElementById('product-table');
+
+        productForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const productName = document.getElementById('product-name').value;
+            const productPrice = parseFloat(document.getElementById('product-price').value);
+
+            // Inserir dados no Supabase
+            const { data, error } = await supabase.from('produtos').insert([
+                { nome: productName, preco: productPrice }
+            ]);
+
+            if (error) {
+                alert('Erro ao salvar no banco de dados: ' + error.message);
+                return;
+            }
+
+            // Adicionar à tabela local
+            const row = document.createElement('tr');
+            const nameCell = document.createElement('td');
+            const priceCell = document.createElement('td');
+
+            nameCell.textContent = productName;
+            priceCell.textContent = productPrice.toFixed(2);
+
+            row.appendChild(nameCell);
+            row.appendChild(priceCell);
+
+            productTable.appendChild(row);
+
+            productForm.reset();
+        });
+    </script>
+</body>
+</html>
