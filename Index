@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select, button, a {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        button {
+            background-color: #28a745;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        a {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        a:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        .total {
+            text-align: right;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .income {
+            color: green;
+        }
+
+        .expense {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Controle Financeiro</h1>
+        <form id="transaction-form">
+            <div class="form-group">
+                <label for="description">Descrição</label>
+                <input type="text" id="description" placeholder="Ex: Salário, Compras..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Valor (R$)</label>
+                <input type="number" id="amount" step="0.01" placeholder="Ex: 100.00" required>
+            </div>
+
+            <div class="form-group">
+                <label for="type">Tipo</label>
+                <select id="type">
+                    <option value="income">Entrada</option>
+                    <option value="expense">Saída</option>
+                </select>
+            </div>
+
+            <button type="submit">Adicionar Transação</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th>Valor (R$)</th>
+                    <th>Tipo</th>
+                </tr>
+            </thead>
+            <tbody id="transaction-table">
+                <!-- Transações aparecerão aqui -->
+            </tbody>
+        </table>
+
+        <div class="total">
+            Total: R$ <span id="total">0.00</span>
+        </div>
+
+        <button id="export-btn">Exportar para Excel</button>
+
+        <a href="produtos.html" id="add-products">Incluir Produtos</a>
+    </div>
+
+    <script>
+        const form = document.getElementById('transaction-form');
+        const transactionTable = document.getElementById('transaction-table');
+        const totalDisplay = document.getElementById('total');
+        const exportBtn = document.getElementById('export-btn');
+
+        let total = 0;
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const description = document.getElementById('description').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const type = document.getElementById('type').value;
+
+            const row = document.createElement('tr');
+            const descriptionCell = document.createElement('td');
+            const amountCell = document.createElement('td');
+            const typeCell = document.createElement('td');
+
+            descriptionCell.textContent = description;
+            amountCell.textContent = amount.toFixed(2);
+            typeCell.textContent = type === 'income' ? 'Entrada' : 'Saída';
+
+            amountCell.classList.add(type === 'income' ? 'income' : 'expense');
+
+            row.appendChild(descriptionCell);
+            row.appendChild(amountCell);
+            row.appendChild(typeCell);
+
+            transactionTable.appendChild(row);
+
+            total += type === 'income' ? amount : -amount;
+            totalDisplay.textContent = total.toFixed(2);
+
+            form.reset();
+        });
+
+        exportBtn.addEventListener('click', function () {
+            let table = document.createElement('table');
+            let headerRow = table.insertRow();
+
+            const headers = ['Descrição', 'Valor (R$)', 'Tipo'];
+            headers.forEach(headerText => {
+                let headerCell = document.createElement('th');
+                headerCell.textContent = headerText;
+                headerRow.appendChild(headerCell);
+            });
+
+            const rows = transactionTable.querySelectorAll('tr');
+            rows.forEach(row => {
+                let newRow = table.insertRow();
+                Array.from(row.children).forEach(cell => {
+                    let newCell = newRow.insertCell();
+                    newCell.textContent = cell.textContent;
+                });
+            });
+
+            let workbook = XLSX.utils.table_to_book(table);
+            XLSX.writeFile(workbook, 'controle_financeiro.xlsx');
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</body>
+</html>
+
